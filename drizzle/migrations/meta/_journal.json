@@ -8,6 +8,13 @@
       "when": 1744908904727,
       "tag": "0000_bumpy_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1744917964446,
+      "tag": "0001_worthless_diamondback",
+      "breakpoints": true
     }
   ]
 }
