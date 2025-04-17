@@ -26,5 +26,6 @@ dist-ssr
 *.sw?
 
 # wrangler files
+.env
 .wrangler
 .dev.vars*

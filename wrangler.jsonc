@@ -12,12 +12,13 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "trippy",
-			"database_id": "d58abe1b-8fa9-4470-be7d-4f4cd31d9a16"
+			"database_id": "d58abe1b-8fa9-4470-be7d-4f4cd31d9a16",
+			"migrations_dir" : "drizzle/migrations"
 		}
 	],
 	/**
