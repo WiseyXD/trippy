@@ -17,10 +17,9 @@
 		{
 			"binding": "DB",
 			"database_name": "trippy",
-			"database_id": "d58abe1b-8fa9-4470-be7d-4f4cd31d9a16",
-			"migrations_dir" : "drizzle/migrations"
+			"database_id": "d58abe1b-8fa9-4470-be7d-4f4cd31d9a16"
 		}
-	],
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
