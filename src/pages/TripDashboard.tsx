@@ -30,12 +30,14 @@ function formatCurrency(amount: number, currency: string = "USD"): string {
 
 // Get initials from name
 function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .substring(0, 2);
+  return (
+    name
+      ?.split(" ")
+      ?.map((part) => part?.[0])
+      ?.join("")
+      ?.toUpperCase()
+      ?.substring(0, 2) || ""
+  );
 }
 
 export function TripDashboardComponent() {
@@ -96,11 +98,11 @@ export function TripDashboardComponent() {
   }
 
   const trip = tripQuery.data;
-  const { members, expenses } = trip;
+  const { members = [], expenses = [] } = trip || {};
   const balances = balancesQuery.data || [];
 
   // Check if current user is a member of this trip
-  const currentMember = members.find((member) => member.userId === user.id);
+  const currentMember = members.find((member) => member?.userId === user?.id);
   if (!currentMember) {
     return (
       <Alert variant="destructive" className="my-4">
@@ -117,52 +119,55 @@ export function TripDashboardComponent() {
 
   // Calculate trip statistics
   const totalExpenses = expenses.reduce(
-    (sum, expense) => sum + expense.amount,
+    (sum, expense) => sum + (expense?.amount || 0),
     0,
   );
   const personalExpenses = expenses
-    .filter((expense) => expense.isPersonal && expense.payerId === user.id)
-    .reduce((sum, expense) => sum + expense.amount, 0);
+    .filter((expense) => expense?.isPersonal && expense?.payerId === user?.id)
+    .reduce((sum, expense) => sum + (expense?.amount || 0), 0);
   const groupExpenses = totalExpenses - personalExpenses;
 
   // User's balance
   const userBalance =
-    balances.find((balance) => balance.userId === user.id)?.balance || 0;
+    balances.find((balance) => balance?.userId === user?.id)?.balance || 0;
 
   return (
     <div className="space-y-6">
       {/* Trip Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{trip.trip.name}</h1>
+          <h1 className="text-3xl font-bold">{trip?.trip?.name}</h1>
           <div className="text-muted-foreground flex flex-wrap items-center gap-2 mt-1">
-            {trip.trip.startDate && (
+            {trip?.trip?.startDate && (
               <div className="flex items-center gap-1">
                 <CalendarIcon className="h-4 w-4" />
                 <span>
-                  {format(new Date(trip.trip.startDate), "MMM d, yyyy")}
-                  {trip.trip.endDate &&
-                    ` - ${format(new Date(trip.trip.endDate), "MMM d, yyyy")}`}
+                  {format(new Date(trip?.trip?.startDate), "MMM d, yyyy")}
+                  {trip?.trip?.endDate &&
+                    ` - ${format(new Date(trip?.trip?.endDate), "MMM d, yyyy")}`}
                 </span>
               </div>
             )}
             <div className="flex items-center gap-1">
               <UsersIcon className="h-4 w-4" />
-              <span>{members.length} members</span>
+              <span>{members?.length} members</span>
             </div>
-            {trip.trip.totalBudget && (
+            {trip?.trip?.totalBudget && (
               <div className="flex items-center gap-1">
                 <DollarSignIcon className="h-4 w-4" />
                 <span>
                   Budget:{" "}
-                  {formatCurrency(trip.trip.totalBudget, trip.trip.currency)}
+                  {formatCurrency(
+                    trip?.trip?.totalBudget,
+                    trip?.trip?.currency,
+                  )}
                 </span>
               </div>
             )}
           </div>
-          {trip.trip.description && (
+          {trip?.trip?.description && (
             <p className="mt-2 text-sm text-muted-foreground">
-              {trip.trip.description}
+              {trip?.trip?.description}
             </p>
           )}
         </div>
@@ -170,7 +175,7 @@ export function TripDashboardComponent() {
         <div className="flex gap-2 self-end md:self-auto">
           <Button variant="outline">
             <UsersIcon className="mr-2 h-4 w-4" />
-            Invite (Code: {trip.trip.code})
+            Invite (Code: {trip?.trip?.code})
           </Button>
           <Link to={`/trip/${tripId}/add-expense`}>
             <Button>
@@ -191,10 +196,10 @@ export function TripDashboardComponent() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(totalExpenses, trip.trip.currency)}
+              {formatCurrency(totalExpenses, trip?.trip?.currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {expenses.length} expenses recorded
+              {expenses?.length} expenses recorded
             </p>
           </CardContent>
         </Card>
@@ -207,7 +212,7 @@ export function TripDashboardComponent() {
             <div
               className={`text-2xl font-bold ${userBalance > 0 ? "text-green-600 dark:text-green-400" : userBalance < 0 ? "text-red-600 dark:text-red-400" : ""}`}
             >
-              {formatCurrency(userBalance, trip.trip.currency)}
+              {formatCurrency(userBalance, trip?.trip?.currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {userBalance > 0
@@ -225,7 +230,7 @@ export function TripDashboardComponent() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(personalExpenses, trip.trip.currency)}
+              {formatCurrency(personalExpenses, trip?.trip?.currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Personal expenses (not shared)
@@ -244,7 +249,7 @@ export function TripDashboardComponent() {
 
         {/* Expenses Tab */}
         <TabsContent value="expenses" className="space-y-4 mt-4">
-          {expenses.length === 0 ? (
+          {expenses?.length === 0 ? (
             <div className="text-center py-12">
               <ReceiptIcon className="mx-auto h-12 w-12 text-muted-foreground opacity-30" />
               <h3 className="mt-4 text-lg font-medium">No expenses yet</h3>
@@ -261,10 +266,12 @@ export function TripDashboardComponent() {
           ) : (
             <div className="rounded-md border">
               {expenses.map((expense: Expense) => {
-                const payer = members.find((m) => m.userId === expense.payerId);
+                const payer = members.find(
+                  (m) => m?.userId === expense?.payerId,
+                );
                 return (
                   <div
-                    key={expense.id}
+                    key={expense?.id}
                     className="flex items-center justify-between p-4 border-b last:border-0"
                   >
                     <div className="flex items-center gap-3">
@@ -275,11 +282,13 @@ export function TripDashboardComponent() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{expense.description}</div>
+                        <div className="font-medium">
+                          {expense?.description}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           Paid by {payer?.name || "Unknown"} ·{" "}
-                          {format(new Date(expense.date), "MMM d, yyyy")}
-                          {expense.isPersonal && (
+                          {format(new Date(expense?.date), "MMM d, yyyy")}
+                          {expense?.isPersonal && (
                             <Badge className="ml-2" variant="outline">
                               Personal
                             </Badge>
@@ -288,7 +297,7 @@ export function TripDashboardComponent() {
                       </div>
                     </div>
                     <div className="font-semibold">
-                      {formatCurrency(expense.amount, trip.trip.currency)}
+                      {formatCurrency(expense?.amount, trip?.trip?.currency)}
                     </div>
                   </div>
                 );
@@ -317,7 +326,7 @@ export function TripDashboardComponent() {
                 <h3 className="font-semibold">Who owes who</h3>
               </div>
 
-              {balances.length === 0 ? (
+              {balances?.length === 0 ? (
                 <div className="p-8 text-center">
                   <WalletIcon className="mx-auto h-12 w-12 text-muted-foreground opacity-30" />
                   <h3 className="mt-4 text-lg font-medium">No balances yet</h3>
@@ -328,33 +337,34 @@ export function TripDashboardComponent() {
               ) : (
                 <div>
                   {balances.map((balance: Balance) => {
-                    if (balance.balance === 0) return null; // Skip settled balances
+                    if (balance?.balance === 0) return null; // Skip settled balances
 
                     return (
                       <div
-                        key={balance.userId}
+                        key={balance?.userId}
                         className="flex items-center justify-between p-4 border-b last:border-0"
                       >
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage
                               src={
-                                members.find((m) => m.userId === balance.userId)
-                                  ?.avatarUrl || ""
+                                members.find(
+                                  (m) => m?.userId === balance?.userId,
+                                )?.avatarUrl || ""
                               }
                             />
                             <AvatarFallback>
-                              {getInitials(balance.name)}
+                              {getInitials(balance?.name || "")}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="font-medium">{balance.name}</div>
+                          <div className="font-medium">{balance?.name}</div>
                         </div>
                         <div
-                          className={`font-semibold ${balance.balance > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                          className={`font-semibold ${balance?.balance > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
                         >
-                          {balance.balance > 0
-                            ? `Gets back ${formatCurrency(balance.balance, trip.trip.currency)}`
-                            : `Owes ${formatCurrency(Math.abs(balance.balance), trip.trip.currency)}`}
+                          {balance?.balance > 0
+                            ? `Gets back ${formatCurrency(balance?.balance, trip?.trip?.currency)}`
+                            : `Owes ${formatCurrency(Math.abs(balance?.balance || 0), trip?.trip?.currency)}`}
                         </div>
                       </div>
                     );
@@ -369,32 +379,34 @@ export function TripDashboardComponent() {
         <TabsContent value="members" className="space-y-4 mt-4">
           <div className="rounded-md border">
             <div className="p-4 border-b bg-muted/50">
-              <h3 className="font-semibold">Trip Members ({members.length})</h3>
+              <h3 className="font-semibold">
+                Trip Members ({members?.length})
+              </h3>
             </div>
 
             <div>
               {members.map((member) => (
                 <div
-                  key={member.id}
+                  key={member?.id}
                   className="flex items-center justify-between p-4 border-b last:border-0"
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={member.avatarUrl || ""} />
+                      <AvatarImage src={member?.avatarUrl || ""} />
                       <AvatarFallback>
-                        {getInitials(member.name)}
+                        {getInitials(member?.name || "")}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="font-medium">
-                        {member.name}
-                        {member.userId === user.id && (
+                        {member?.name}
+                        {member?.userId === user?.id && (
                           <span className="ml-2 text-xs text-muted-foreground">
                             (You)
                           </span>
                         )}
                       </div>
-                      {member.isOwner && (
+                      {member?.isOwner && (
                         <Badge variant="outline" className="mt-1">
                           Trip Owner
                         </Badge>
@@ -402,7 +414,7 @@ export function TripDashboardComponent() {
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Joined {format(new Date(member.joinedAt), "MMM d, yyyy")}
+                    Joined {format(new Date(member?.joinedAt), "MMM d, yyyy")}
                   </div>
                 </div>
               ))}
